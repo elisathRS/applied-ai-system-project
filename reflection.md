@@ -2,10 +2,24 @@
 
 ## 1. System Design
 
-**a. Initial design**
+### a. Initial Design
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+- **Briefly describe your initial UML design:**  
+  The design models a pet care system with four main classes: **Owner, Pet, Task, and Scheduler**. It organizes the relationships between owners, their pets, and tasks, while separating task management logic from the data.
+
+- **What classes did you include, and what responsibilities did you assign to each?**  
+
+  **Classes:**  
+  - **Owner** – represents a pet owner.  
+  - **Pet** – represents an individual pet.  
+  - **Task** – represents a pet-related task.  
+  - **Scheduler** – manages and organizes tasks across pets.  
+
+  **Responsibilities:**  
+  - **Owner:** Manage pets (add, list, remove).  
+  - **Pet:** Store pet info and manage its tasks (add, list, remove).  
+  - **Task:** Track task details and completion status (mark complete).  
+  - **Scheduler:** Collect all tasks, organize them, generate daily plans, and resolve conflicts.  
 
 **b. Design changes**
 
