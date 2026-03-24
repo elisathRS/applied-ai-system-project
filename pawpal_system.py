@@ -1,5 +1,12 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
+from uuid import UUID, uuid4
+
+
+class TaskStatus(Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
 
 
 # ---------------------------------------------------------------------------
@@ -10,7 +17,11 @@ from datetime import datetime
 class Task:
     description: str
     due_date_time: datetime
-    status: str = "pending"  # "pending" or "completed"
+    pet_id: UUID
+    duration_minutes: int = 30        # how long the task takes; used to detect overlaps
+    priority: int = 2                 # 1 = High, 2 = Medium, 3 = Low
+    status: TaskStatus = TaskStatus.PENDING
+    id: UUID = field(default_factory=uuid4)
 
     def mark_complete(self) -> None:
         """Mark this task as completed."""
@@ -24,12 +35,13 @@ class Task:
 @dataclass
 class Pet:
     name: str
-    type: str       
+    species: str
     age: int
     gender: str
     weight: float
     breed: str
     tasks: list[Task] = field(default_factory=list)
+    id: UUID = field(default_factory=uuid4)
 
     def add_task(self, _task: Task) -> None:
         """Add a new task to this pet."""
