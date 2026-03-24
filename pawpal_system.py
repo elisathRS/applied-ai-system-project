@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -25,7 +25,7 @@ class Task:
 
     def mark_complete(self) -> None:
         """Mark this task as completed."""
-        pass
+        self.status = TaskStatus.COMPLETED
 
 
 # ---------------------------------------------------------------------------
@@ -45,15 +45,15 @@ class Pet:
 
     def add_task(self, _task: Task) -> None:
         """Add a new task to this pet."""
-        pass
+        self.tasks.append(_task)
 
     def list_tasks(self) -> list[Task]:
         """Return all tasks for this pet."""
-        pass
+        return self.tasks
 
     def remove_task(self, _task: Task) -> None:
         """Remove a task from this pet."""
-        pass
+        self.tasks.remove(_task)
 
 
 # ---------------------------------------------------------------------------
@@ -69,15 +69,15 @@ class Owner:
 
     def add_pet(self, pet: Pet) -> None:
         """Add a pet to this owner's list."""
-        pass
+        self.pets.append(pet)
 
     def list_pets(self) -> list[Pet]:
         """Return all pets belonging to this owner."""
-        pass
+        return self.pets
 
     def remove_pet(self, pet: Pet) -> None:
         """Remove a pet from this owner's list."""
-        pass
+        self.pets.remove(pet)
 
 
 # ---------------------------------------------------------------------------
@@ -89,16 +89,46 @@ class Scheduler:
 
     def collect_tasks(self, owner: Owner) -> list[Task]:
         """Gather all tasks across every pet owned by the given owner."""
-        pass
+        all_tasks = []
+        for pet in owner.list_pets():
+            all_tasks.extend(pet.list_tasks())
+        return all_tasks
 
     def organize_tasks(self, tasks: list[Task]) -> list[Task]:
-        """Sort and prioritize a list of tasks for the day."""
-        pass
+        """Sort and prioritize a list of tasks for the day.
+
+        Primary sort: priority ascending (1=High comes first).
+        Secondary sort: due_date_time ascending.
+        """
+        return sorted(tasks, key=lambda t: (t.priority, t.due_date_time))
 
     def generate_daily_plan(self, owner: Owner) -> list[Task]:
-        """Produce an ordered daily schedule for the owner."""
-        pass
+        """Produce an ordered daily schedule for the owner.
+
+        Collects all pending tasks due today, organizes them, then
+        resolves any time conflicts before returning the final plan.
+        """
+        today = datetime.now().date()
+        tasks = [
+            t for t in self.collect_tasks(owner)
+            if t.status == TaskStatus.PENDING and t.due_date_time.date() == today
+        ]
+        organized = self.organize_tasks(tasks)
+        return self.resolve_conflicts(organized)
 
     def resolve_conflicts(self, tasks: list[Task]) -> list[Task]:
-        """Adjust tasks that overlap in time or priority."""
-        pass
+        """Adjust tasks that overlap in time.
+
+        Tasks are processed in priority order (already sorted by the caller).
+        If a task's start time overlaps with the previous task's window,
+        it is pushed out to start immediately after the previous task ends.
+        """
+        resolved: list[Task] = []
+        for task in tasks:
+            if resolved:
+                prev = resolved[-1]
+                prev_end = prev.due_date_time + timedelta(minutes=prev.duration_minutes)
+                if task.due_date_time < prev_end:
+                    task.due_date_time = prev_end
+            resolved.append(task)
+        return resolved
