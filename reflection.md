@@ -27,40 +27,40 @@
     Yes
 - If yes, describe at least one change and why you made it.
 
-    This update improves the code to make it safer and easier to use.
-    
-    ## 1. Renamed `type` → `species` in Pet
-    - `type` is a built-in Python function.
-    - Using it as an attribute can cause confusion and bugs.
-    - `species` is clearer and avoids conflicts.
-    
-    ## 2. Added `TaskStatus` enum
-    - Replaced `status: str` with `status: TaskStatus`.
-    - Prevents errors from typos like "pendng" or "Pending".
-    - Only valid values are allowed: `PENDING` and `COMPLETED`.
-    
-    ## 3. Added `id: UUID` to Task and Pet
-    - Names are not always unique (e.g., two pets named "Bella").
-    - UUID ensures each object is unique.
-    - Makes removing or finding items accurate and reliable.
-    
-    ## 4. Added `pet_id: UUID` to Task
-    - Keeps track of which pet a task belongs to.
-    - Important when tasks are combined into one list.
-    - Maintains the connection between task and pet.
-    
-    ## 5. Added `duration_minutes: int = 30` to Task
-    - Helps calculate how long a task lasts.
-    - Needed to detect time conflicts.
-    - Default duration is 30 minutes.
-    
-    ## 6. Added `priority: int = 2` to Task
-    - Allows tasks to be sorted by importance.
-    - Priority levels:
-      - `1 = High`
-      - `2 = Medium` (default)
-      - `3 = Low`
-    - Improves task organization beyond just time.
+   These changes make the code safer, clearer, and easier to manage.
+
+  **Renamed `type` → `species`**
+  - `type` is a Python built-in function.
+  - Using it can cause confusing bugs.
+  - `species` is clearer and safer.
+  
+  **Added `TaskStatus` enum**
+  - Replaced text status with a fixed set of values.
+  - Prevents mistakes like spelling errors.
+  - Only `PENDING` and `COMPLETED` are allowed.
+  
+  **Added `id: UUID` to Task and Pet**
+  - Names can be repeated.
+  - UUID gives each object a unique ID.
+  - Ensures the correct item is removed or found.
+  
+  **Added `pet_id: UUID` to Task**
+  - Keeps track of which pet each task belongs to.
+  - Important when all tasks are in one list.
+  - Maintains the connection between task and pet.
+  
+  **Added `duration_minutes` to Task**
+  - Helps know how long a task takes.
+  - Needed to detect time conflicts.
+  - Default is 30 minutes.
+  
+  **Added `priority` to Task**
+  - Allows tasks to be sorted by importance.
+  - Levels:
+    - `1 = High`
+    - `2 = Medium` (default)
+    - `3 = Low`
+  - Improves scheduling beyond just time.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
