@@ -36,6 +36,32 @@ The `Scheduler` class goes beyond a simple sorted list. Here's what it can do:
 
 - **Daily plan** — `generate_daily_plan()` combines all of the above: it collects today's pending tasks, sorts by priority, and resolves any time conflicts before returning the final schedule.
 
+## Testing PawPal+
+
+### Run the tests
+
+```bash
+python -m pytest
+```
+
+### What the tests cover
+
+The test suite in `tests/test_pawpal.py` verifies the following behaviors:
+
+- **Task status** — marking a task complete changes its status to `COMPLETED`
+- **Pet task list** — adding tasks correctly increases the pet's task count
+- **Sorting** — `sort_by_time` returns tasks in chronological order, preserves all tasks, and handles already-sorted input
+- **Recurrence** — completing a `daily` task spawns a new task 1 day later (with the same recurrence), completing a `weekly` task spawns one 7 days later, and one-shot tasks return `None` with no follow-up created
+- **Conflict detection** — overlapping task windows are flagged (including tasks across different pets), sequential (back-to-back) tasks produce no warnings, and an empty task list produces no warnings
+
+### Confidence Level
+
+**★★★★☆ (4/5)**
+
+The core scheduling logic — sorting, recurrence chaining, and conflict detection — is well-covered by targeted unit tests, giving high confidence in those behaviors. A star is withheld because the UI layer (`app.py`) and end-to-end user flows are not yet covered by automated tests.
+
+---
+
 ## Getting started
 
 ### Setup
