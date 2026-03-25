@@ -109,9 +109,8 @@
   - **Documentation**
     - AI helped me write clear summaries and explanations.
     - It improved my GitHub README.
-      
-  - What kinds of prompts or questions were most helpful?
-    
+
+- What kinds of prompts or questions were most helpful?
       - **"Explain this code step by step"**
         - Helped me understand complex logic in simple terms.
       
@@ -130,6 +129,8 @@
       - **"What edge cases should I consider?"**
         - Helped me think about problems I might miss.
       
+    
+     
 
 
 **b. Judgment and verification**
