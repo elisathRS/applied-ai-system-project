@@ -1,5 +1,11 @@
 from datetime import datetime, timedelta
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich import box
 from pawpal_system import Owner, Pet, Task, TaskStatus, Scheduler
+
+console = Console()
 
 # --- Setup ---
 owner = Owner(name="Jordan", phone_number="555-1234", email="jordan@example.com")
@@ -62,7 +68,6 @@ luna.add_task(Task(
     priority=3,
 ))
 
-# --- Deliberate conflicts ---
 # Conflict 1 (same pet): Mochi has a bath at 7:10 AM — overlaps her Morning walk (7:00-7:30)
 mochi.add_task(Task(
     description="Bath time",
@@ -81,75 +86,118 @@ luna.add_task(Task(
 ))
 
 # --- Scheduler ---
-scheduler = Scheduler()
-pet_lookup = {pet.id: pet.name for pet in owner.list_pets()}
-priority_label = {1: "High", 2: "Medium", 3: "Low"}
+scheduler   = Scheduler()
+pet_lookup  = {pet.id: pet.name for pet in owner.list_pets()}
 
-def print_tasks(tasks: list, title: str) -> None:
-    print(f"\n{'=' * 52}")
-    print(f"  {title}")
-    print(f"{'=' * 52}")
-    if not tasks:
-        print("  (no tasks)")
-        return
+PRIORITY_STYLE = {1: "[bold red]High[/]", 2: "[yellow]Medium[/]", 3: "[green]Low[/]"}
+PRIORITY_LABEL = {1: "High",              2: "Medium",             3: "Low"}
+SPECIES_EMOJI  = {"dog": "🐶", "cat": "🐱"}
+STATUS_ICON    = {TaskStatus.PENDING: "🔲", TaskStatus.COMPLETED: "✅"}
+RECUR_ICON     = {"daily": "🔁 daily", "weekly": "📅 weekly", None: "1️⃣  one-shot"}
+
+
+def make_task_table(tasks: list, title: str) -> Table:
+    table = Table(
+        title=title,
+        box=box.ROUNDED,
+        show_lines=True,
+        title_style="bold cyan",
+        header_style="bold white on dark_blue",
+    )
+    table.add_column("Status",     justify="center", width=4)
+    table.add_column("Pet",        style="cyan")
+    table.add_column("Task",       style="bold")
+    table.add_column("Date",       style="white")
+    table.add_column("Time",       style="white")
+    table.add_column("Priority",   justify="center")
+    table.add_column("Recurrence", justify="center")
+
     for task in tasks:
-        end_time = task.due_date_time + timedelta(minutes=task.duration_minutes)
-        pet_name = pet_lookup.get(task.pet_id, "Unknown")
-        recur_label = f"[{task.recurrence}]" if task.recurrence else "[one-shot]"
-        print(
-            f"  {task.due_date_time.strftime('%a %m/%d %I:%M %p')} - {end_time.strftime('%I:%M %p')}"
-            f"  [{priority_label[task.priority]:6}]"
-            f"  [{task.status.value:9}]"
-            f"  {recur_label:8}"
-            f"  {pet_name}: {task.description}"
+        end_time  = task.due_date_time + timedelta(minutes=task.duration_minutes)
+        pet_name  = pet_lookup.get(task.pet_id, "Unknown")
+        emoji     = SPECIES_EMOJI.get(
+            next((p.species for p in owner.list_pets() if p.id == task.pet_id), ""), "🐾"
         )
-    print(f"  {len(tasks)} task(s)")
+        table.add_row(
+            STATUS_ICON[task.status],
+            f"{emoji} {pet_name}",
+            task.description,
+            task.due_date_time.strftime("%a %m/%d"),
+            f"{task.due_date_time.strftime('%I:%M %p')} – {end_time.strftime('%I:%M %p')}",
+            PRIORITY_STYLE[task.priority],
+            RECUR_ICON.get(task.recurrence, task.recurrence),
+        )
+    return table
 
-# 1. Conflict detection — run before anything else so warnings appear first
-print(f"\n{'=' * 52}")
-print("  CONFLICT DETECTION REPORT")
-print(f"{'=' * 52}")
+
+# ---------------------------------------------------------------------------
+# 1. Conflict detection
+# ---------------------------------------------------------------------------
+console.print()
 conflicts = scheduler.detect_conflicts(owner)
 if conflicts:
-    for warning in conflicts:
-        print(f"  {warning}")
+    conflict_lines = "\n".join(f"  ⚠️  {w.removeprefix('WARNING: ')}" for w in conflicts)
+    console.print(Panel(
+        conflict_lines,
+        title="[bold red]⚠️  CONFLICT DETECTION REPORT[/]",
+        border_style="red",
+    ))
+    console.print(f"  [red]{len(conflicts)} conflict(s) detected.[/]\n")
 else:
-    print("  No conflicts found.")
-print(f"  {len(conflicts)} conflict(s) detected.")
+    console.print(Panel("[green]No conflicts found.[/]", title="CONFLICT DETECTION REPORT", border_style="green"))
 
-# 2. All tasks — raw insertion order, showing recurrence field
+# ---------------------------------------------------------------------------
+# 2. All tasks — raw insertion order
+# ---------------------------------------------------------------------------
 all_tasks = scheduler.collect_tasks(owner)
-print_tasks(all_tasks, "ALL TASKS — raw order, recurrence labels visible")
+console.print(make_task_table(all_tasks, "ALL TASKS — raw order, recurrence labels visible"))
+console.print(f"  [dim]{len(all_tasks)} task(s)[/]\n")
 
-# 2. Complete Mochi's morning walk (daily) — should spawn tomorrow's
+# ---------------------------------------------------------------------------
+# 3. Complete recurring tasks and one-shot
+# ---------------------------------------------------------------------------
 morning_walk = next(t for t in mochi.tasks if t.description == "Morning walk")
-print(f"\n  >> Completing '{morning_walk.description}' (recurrence={morning_walk.recurrence})")
+console.print(f"  [bold]>> Completing[/] '[cyan]{morning_walk.description}[/]' (recurrence=[yellow]{morning_walk.recurrence}[/])")
 next_task = scheduler.complete_task(morning_walk, mochi)
 if next_task:
-    print(f"  >> Spawned next occurrence: {next_task.description} on {next_task.due_date_time.strftime('%a %m/%d at %I:%M %p')}")
+    console.print(f"  [green]>> Spawned next:[/] {next_task.description} on {next_task.due_date_time.strftime('%a %m/%d at %I:%M %p')}\n")
 
-# 3. Complete Luna's litter box (weekly) — should spawn next week's
 litter_box = next(t for t in luna.tasks if t.description == "Clean litter box")
-print(f"\n  >> Completing '{litter_box.description}' (recurrence={litter_box.recurrence})")
+console.print(f"  [bold]>> Completing[/] '[cyan]{litter_box.description}[/]' (recurrence=[yellow]{litter_box.recurrence}[/])")
 next_task = scheduler.complete_task(litter_box, luna)
 if next_task:
-    print(f"  >> Spawned next occurrence: {next_task.description} on {next_task.due_date_time.strftime('%a %m/%d at %I:%M %p')}")
+    console.print(f"  [green]>> Spawned next:[/] {next_task.description} on {next_task.due_date_time.strftime('%a %m/%d at %I:%M %p')}\n")
 
-# 4. Complete Luna's vet check-up (one-shot) — should NOT spawn anything
 vet = next(t for t in luna.tasks if t.description == "Vet check-up")
-print(f"\n  >> Completing '{vet.description}' (recurrence={vet.recurrence})")
+console.print(f"  [bold]>> Completing[/] '[cyan]{vet.description}[/]' (recurrence=[yellow]{vet.recurrence}[/])")
 result = scheduler.complete_task(vet, luna)
-print(f"  >> Next occurrence spawned: {result}")   # expected: None
+console.print(f"  [dim]>> Next occurrence spawned: {result}[/]\n")
 
-# 5. All tasks after completions — new occurrences now visible
-pet_lookup = {pet.id: pet.name for pet in owner.list_pets()}   # refresh in case new pets added
-all_tasks = scheduler.collect_tasks(owner)
-print_tasks(scheduler.sort_by_time(all_tasks), "ALL TASKS AFTER COMPLETIONS — sorted by time")
+# ---------------------------------------------------------------------------
+# 4. All tasks after completions — sorted by time
+# ---------------------------------------------------------------------------
+pet_lookup = {pet.id: pet.name for pet in owner.list_pets()}
+all_tasks  = scheduler.collect_tasks(owner)
+console.print(make_task_table(scheduler.sort_by_time(all_tasks), "ALL TASKS AFTER COMPLETIONS — sorted by time"))
+console.print(f"  [dim]{len(all_tasks)} task(s)[/]\n")
 
-# 6. Pending only
+# ---------------------------------------------------------------------------
+# 5. Pending only
+# ---------------------------------------------------------------------------
 pending = scheduler.filter_by_status(all_tasks, TaskStatus.PENDING)
-print_tasks(pending, "PENDING TASKS ONLY")
+console.print(make_task_table(pending, "🔲  PENDING TASKS ONLY"))
+console.print(f"  [dim]{len(pending)} task(s)[/]\n")
 
-# 7. Completed only
+# ---------------------------------------------------------------------------
+# 6. Completed only
+# ---------------------------------------------------------------------------
 completed = scheduler.filter_by_status(all_tasks, TaskStatus.COMPLETED)
-print_tasks(completed, "COMPLETED TASKS ONLY")
+console.print(make_task_table(completed, "✅  COMPLETED TASKS ONLY"))
+console.print(f"  [dim]{len(completed)} task(s)[/]\n")
+
+# ---------------------------------------------------------------------------
+# 7. Today's conflict-free priority-ordered daily plan
+# ---------------------------------------------------------------------------
+plan = scheduler.generate_daily_plan(owner)
+console.print(make_task_table(plan, "📋  TODAY'S DAILY PLAN — priority-sorted, conflicts resolved"))
+console.print(f"  [dim]{len(plan)} task(s) scheduled for today[/]\n")
