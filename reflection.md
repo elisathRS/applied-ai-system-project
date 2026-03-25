@@ -68,6 +68,7 @@
 **a. Constraints and priorities**
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
+  
 - How did you decide which constraints mattered most?
 
 **b. Tradeoffs**
@@ -129,10 +130,6 @@
       
   - **"What edge cases should I consider?"**
     - Helped me think about problems I might miss.
-      
-    
-     
-
 
 **b. Judgment and verification**
 
@@ -194,11 +191,17 @@
 **a. What went well**
 
 - What part of this project are you most satisfied with?
+  
+    I am most satisfied with the Scheduler class because it brings everything together. It can collect tasks, organize them, detect conflicts, and generate a daily plan. It shows how different         parts of the system work together in one place.
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
+  
+   I would improve the performance of detect_conflicts. It currently compares every task with every other task, which is not efficient. I would optimize it by sorting tasks first and checking only    nearby ones.t.
 
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+  
+  I learned that AI can be very helpful for brainstorming design ideas, explaining code, or debugging, but I still need to carefully review suggestions and make sure they fit the system’s design     principles.
