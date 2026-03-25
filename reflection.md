@@ -108,7 +108,32 @@
   - **Documentation**
     - AI helped me write clear summaries and explanations.
     - It improved my GitHub README.
+      
   - What kinds of prompts or questions were most helpful?
+  - 
+    - **"Explain this code step by step"**
+      - Helped me understand complex logic in simple terms.
+    
+    - **"Why is this code not working?"**
+      - Useful for debugging and finding errors.
+    
+    - **"How can I improve this code?"**
+      - Helped with refactoring and making code cleaner.
+    
+    - **"What is a better name for this variable or method?"**
+      - Improved readability and clarity.
+    
+    - **"Give me an example"**
+      - Helped me understand concepts faster with simple examples.
+    
+    - **"What are best practices for this?"**
+      - Guided me to write more professional and reliable code.
+    
+    - **"What edge cases should I consider?"**
+      - Helped me think about problems I might miss.
+    
+    - **"Can you simplify this explanation?"**
+      - Made difficult topics easier to understand.
 
 **b. Judgment and verification**
 
