@@ -84,8 +84,8 @@
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
   
    - **Design brainstorming**
-    - I used AI to plan the structure of the app.
-    - It helped me decide the main classes and their roles.
+      - I used AI to plan the structure of the app.
+      - It helped me decide the main classes and their roles.
   
   - **Code explanation**
     - I asked AI to explain code step by step.
