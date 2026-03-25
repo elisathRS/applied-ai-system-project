@@ -82,7 +82,33 @@
 **a. How you used AI**
 
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+   - **Design brainstorming**
+    - I used AI to plan the structure of the app.
+    - It helped me decide the main classes and their roles.
+  
+  - **Code explanation**
+    - I asked AI to explain code step by step.
+    - This helped me understand difficult concepts.
+  
+  - **Debugging**
+    - AI helped me find and fix errors in my code.
+    - It explained why the code was not working.
+  
+  - **Refactoring**
+    - AI suggested cleaner and more organized code.
+    - It improved readability and structure.
+  
+  - **Naming improvements**
+    - AI helped me choose clearer names for variables and methods.
+  
+  - **Best practices**
+    - AI suggested improvements like using enums and unique IDs.
+    - This made my code more reliable.
+  
+  - **Documentation**
+    - AI helped me write clear summaries and explanations.
+    - It improved my GitHub README.
+  - What kinds of prompts or questions were most helpful?
 
 **b. Judgment and verification**
 
