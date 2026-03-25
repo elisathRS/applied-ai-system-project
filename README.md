@@ -22,6 +22,20 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## Smarter Scheduling
+
+The `Scheduler` class goes beyond a simple sorted list. Here's what it can do:
+
+- **Recurring tasks** — Tasks can be marked `"daily"` or `"weekly"`. Calling `complete_task()` marks the task done and automatically adds the next occurrence to the pet's task list. One-shot tasks are completed without spawning a follow-up.
+
+- **Conflict detection** — `detect_conflicts()` scans every pair of pending tasks and reports any whose time windows overlap, regardless of which pet they belong to. Warnings include the task names, pets, and exact time ranges.
+
+- **Conflict resolution** — `resolve_conflicts()` fixes overlaps in the daily plan by pushing lower-priority tasks to start immediately after the previous task ends, so no two tasks run at the same time.
+
+- **Filtering** — `filter_by_status()` returns only pending or completed tasks; `filter_by_pet()` narrows the list to a single pet by name.
+
+- **Daily plan** — `generate_daily_plan()` combines all of the above: it collects today's pending tasks, sorts by priority, and resolves any time conflicts before returning the final schedule.
+
 ## Getting started
 
 ### Setup
