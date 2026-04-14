@@ -1,0 +1,10 @@
+{
+  "general": "Small and exotic pets require species-specific care. Research your specific animal's needs. Key daily tasks include feeding, fresh water, habitat cleaning, and health monitoring.",
+  "puppy_kitten": "Young animals need more frequent feeding (2-4x daily), gentle handling for socialization, and species-appropriate enrichment. Consult a specialized vet early for vaccination or health guidance.",
+  "adult": "Adult small pets need consistent feeding schedules (1-2x daily), weekly habitat cleaning, daily spot cleaning, and regular health checks. Handle regularly to maintain tameness.",
+  "senior": "Older small pets need softer foods, easier habitat access, more frequent vet check-ups, and careful temperature regulation. Watch for signs of pain or discomfort.",
+  "feeding": "Feed species-appropriate diet twice daily. Remove uneaten fresh food within 2-4 hours to prevent spoilage. Always provide fresh water; use a bottle or heavy bowl depending on species. Supplement with species-appropriate treats sparingly.",
+  "exercise": "Provide daily out-of-habitat time if safe and appropriate for the species (e.g., rabbits, guinea pigs). Enrich the habitat with tunnels, toys, and climbing structures. Rotate enrichment items weekly.",
+  "grooming": "Brush fur weekly if applicable. Trim nails every 3-4 weeks. Clean habitat weekly with full disinfection monthly. Monitor teeth, eyes, and coat condition during daily interactions.",
+  "vet_checkups": "Annual wellness exam with an exotic animal or small mammal specialist. Many small pets hide illness well — watch for changes in appetite, activity, weight, or droppings. Emergency vet access is important as small pets can decline rapidly."
+}

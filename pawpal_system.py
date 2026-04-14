@@ -1,7 +1,10 @@
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from uuid import UUID, uuid4
+
+logger = logging.getLogger(__name__)
 
 
 class TaskStatus(Enum):
@@ -47,6 +50,7 @@ class Pet:
     def add_task(self, _task: Task) -> None:
         """Add a new task to this pet."""
         self.tasks.append(_task)
+        logger.info("Task added to %s: '%s' at %s", self.name, _task.description, _task.due_date_time.strftime("%I:%M %p"))
 
     def list_tasks(self) -> list[Task]:
         """Return all tasks for this pet."""
@@ -55,6 +59,7 @@ class Pet:
     def remove_task(self, _task: Task) -> None:
         """Remove a task from this pet."""
         self.tasks.remove(_task)
+        logger.info("Task removed from %s: '%s'", self.name, _task.description)
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +76,7 @@ class Owner:
     def add_pet(self, pet: Pet) -> None:
         """Add a pet to this owner's list."""
         self.pets.append(pet)
+        logger.info("Owner '%s' added pet: %s (%s)", self.name, pet.name, pet.species)
 
     def list_pets(self) -> list[Pet]:
         """Return all pets belonging to this owner."""
@@ -79,6 +85,7 @@ class Owner:
     def remove_pet(self, pet: Pet) -> None:
         """Remove a pet from this owner's list."""
         self.pets.remove(pet)
+        logger.info("Owner '%s' removed pet: %s", self.name, pet.name)
 
 
 # ---------------------------------------------------------------------------
@@ -91,6 +98,7 @@ class Scheduler:
     def complete_task(self, task: Task, pet: Pet) -> Task | None:
         """Mark a task done and schedule the next occurrence if it recurs; returns the new Task or None."""
         task.mark_complete()
+        logger.info("Task completed: '%s' (pet_id=%s)", task.description, task.pet_id)
 
         if task.recurrence == "daily":
             delta = timedelta(days=1)
@@ -108,6 +116,7 @@ class Scheduler:
             recurrence=task.recurrence,
         )
         pet.add_task(next_task)
+        logger.info("Recurring task spawned: '%s' → %s", task.description, next_task.due_date_time.strftime("%Y-%m-%d %I:%M %p"))
         return next_task
 
     def collect_tasks(self, owner: Owner) -> list[Task]:
@@ -167,6 +176,8 @@ class Scheduler:
                         f"overlaps with '{b.description}' ({pet_lookup[b.pet_id]}, "
                         f"{b.due_date_time.strftime('%I:%M %p')}-{b_end.strftime('%I:%M %p')})"
                     )
+        if warnings:
+            logger.warning("%d scheduling conflict(s) detected for owner '%s'", len(warnings), owner.name)
         return warnings
 
     def resolve_conflicts(self, tasks: list[Task]) -> list[Task]:

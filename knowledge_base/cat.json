@@ -1,0 +1,10 @@
+{
+  "general": "Cats are independent but still require consistent daily care. They are crepuscular (most active at dawn and dusk). Provide fresh water, clean litter box, and enrichment daily.",
+  "puppy_kitten": "Kittens (under 1 year) need 3-4 small meals per day of kitten-formula food, litter box training, socialization during the 2-7 week window, and play sessions of 10-15 minutes multiple times daily. Vaccinations: FVRCP series at 8, 12, 16 weeks; rabies at 16 weeks. Spay/neuter around 5-6 months.",
+  "adult": "Adult cats (1-10 years) need 2 meals per day, 10-15 minutes of active play twice daily, annual wellness exams, and dental care. Keep litter box clean — scoop daily, full clean weekly. Indoor cats need scratching posts and climbing structures.",
+  "senior": "Senior cats (10+ years) need wet food or softened dry food, bi-annual vet exams with bloodwork, heated sleeping spots for joint comfort, and easier litter box access (lower sides). Monitor weight and drinking habits closely.",
+  "feeding": "Feed based on weight: under 5 lbs = 1/4 cup dry/day; 5-10 lbs = 1/4-1/2 cup dry/day; 10-15 lbs = 1/2-3/4 cup dry/day. Wet food: 1 small can (3 oz) per 3-4 lbs of body weight per day. Always provide fresh water; consider a water fountain.",
+  "exercise": "Indoor cats need 2 play sessions per day of 10-15 minutes using wand toys, laser pointers, or puzzle feeders. Rotate toys weekly to maintain interest. Provide window perches for mental stimulation.",
+  "grooming": "Brush short-haired cats weekly; long-haired cats daily. Trim nails every 2-3 weeks. Clean ears monthly or when dirty. Brush teeth 3x per week minimum — daily is ideal. Cats rarely need baths unless into something messy.",
+  "vet_checkups": "Annual wellness exam for adults. Bi-annual for seniors (10+ years). Core vaccines: rabies (every 1-3 years), FVRCP (every 1-3 years). Optional: FeLV for outdoor cats. Monthly flea prevention for outdoor/indoor-outdoor cats."
+}

@@ -1,6 +1,19 @@
+import logging
 import streamlit as st
 from datetime import datetime, timedelta
 from pawpal_system import Owner, Pet, Task, TaskStatus, Scheduler
+from ai_advisor import suggest_tasks
+
+# Configure root logging once for the whole app
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.FileHandler("pawpal.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
+)
+_app_logger = logging.getLogger("app")
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 st.title("🐾 PawPal+")
@@ -89,6 +102,8 @@ with st.form(f"pet_form_{st.session_state.pet_form_key}"):
                           age=int(age), gender=gender, weight=float(weight))
             owner.add_pet(new_pet)
             st.session_state.pet_form_key += 1
+            st.session_state.task_form_key += 1       # reset task form
+            st.session_state.default_task_pet = pet_name  # pre-select new pet
             st.rerun()
 
 current_pets = owner.list_pets()
@@ -125,13 +140,17 @@ st.subheader("Add a Task")
 
 if "task_form_key" not in st.session_state:
     st.session_state.task_form_key = 0
+if "default_task_pet" not in st.session_state:
+    st.session_state.default_task_pet = None
 
 if not current_pets:
     st.info("Add a pet first before scheduling tasks.")
 else:
     with st.form(f"task_form_{st.session_state.task_form_key}"):
         pet_names   = [p.name for p in current_pets]
-        target_name = st.selectbox("Assign to pet", pet_names)
+        default_idx = pet_names.index(st.session_state.default_task_pet) \
+            if st.session_state.default_task_pet in pet_names else 0
+        target_name = st.selectbox("Assign to pet", pet_names, index=default_idx)
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -179,6 +198,7 @@ else:
                 )
                 target_pet.add_task(new_task)
                 st.session_state.task_form_key += 1
+                st.session_state.default_task_pet = target_name  # keep same pet selected
                 st.rerun()
 
 # ---------------------------------------------------------------------------
@@ -285,3 +305,83 @@ if st.button("Generate schedule"):
         ]
         st.success(f"{len(plan)} task(s) scheduled for today.")
         st.table(rows)
+
+# ---------------------------------------------------------------------------
+# Section 6 — AI Care Advisor (RAG + Agentic Workflow)
+# ---------------------------------------------------------------------------
+st.divider()
+st.subheader("AI Care Advisor")
+st.caption(
+    "Powered by Claude. The AI retrieves care guidelines from the knowledge base "
+    "for your pet's species and age, then suggests personalised tasks for today."
+)
+
+if not current_pets:
+    st.info("Add a pet first to get AI-powered care suggestions.")
+else:
+    if "ai_suggestions" not in st.session_state:
+        st.session_state.ai_suggestions = {}   # pet_id → list[Task] | str
+    if "added_suggestions" not in st.session_state:
+        st.session_state.added_suggestions = set()  # task ids already added
+
+    advisor_pet_name = st.selectbox(
+        "Select pet for AI suggestions",
+        [p.name for p in current_pets],
+        key="advisor_pet_select",
+    )
+    advisor_pet = next(p for p in current_pets if p.name == advisor_pet_name)
+
+    col_btn, col_clear = st.columns([2, 1])
+    with col_btn:
+        get_suggestions = st.button("Get AI suggestions", type="primary")
+    with col_clear:
+        if st.button("Clear suggestions"):
+            st.session_state.ai_suggestions.pop(str(advisor_pet.id), None)
+            st.session_state.added_suggestions = set()
+            st.rerun()
+
+    if get_suggestions:
+        _app_logger.info(
+            "User requested AI suggestions for pet '%s' (%s)",
+            advisor_pet.name, advisor_pet.species,
+        )
+        with st.spinner("Retrieving care guidelines and generating suggestions..."):
+            result = suggest_tasks(advisor_pet, owner, scheduler)
+        st.session_state.ai_suggestions[str(advisor_pet.id)] = result
+        st.rerun()
+
+    cached = st.session_state.ai_suggestions.get(str(advisor_pet.id))
+
+    if cached is not None:
+        if isinstance(cached, str):
+            # Error message returned by the advisor
+            st.error(cached)
+        else:
+            priority_labels = {1: "High", 2: "Medium", 3: "Low"}
+            st.success(f"{len(cached)} task suggestion(s) for **{advisor_pet.name}**:")
+
+            for suggestion in cached:
+                end_time = suggestion.due_date_time + timedelta(minutes=suggestion.duration_minutes)
+                recur_tag = f" [{suggestion.recurrence}]" if suggestion.recurrence else ""
+                already_added = str(suggestion.id) in st.session_state.added_suggestions
+
+                col_info, col_add = st.columns([4, 1])
+                with col_info:
+                    st.markdown(
+                        f"**{suggestion.description}**{recur_tag}  \n"
+                        f"🕐 {suggestion.due_date_time.strftime('%I:%M %p')} – {end_time.strftime('%I:%M %p')} "
+                        f"| {priority_labels[suggestion.priority]} priority "
+                        f"| {suggestion.duration_minutes} min"
+                    )
+                with col_add:
+                    if already_added:
+                        st.success("Added")
+                    else:
+                        if st.button("Add to schedule", key=f"add_sug_{suggestion.id}"):
+                            advisor_pet.add_task(suggestion)
+                            st.session_state.added_suggestions.add(str(suggestion.id))
+                            _app_logger.info(
+                                "User added AI suggestion to schedule: '%s' for %s",
+                                suggestion.description, advisor_pet.name,
+                            )
+                            st.rerun()
