@@ -176,10 +176,32 @@ Writing tests for an AI module requires a different mindset than testing determi
 
 ## Reflection
 
+### How I used AI during development
+
+AI was used at multiple stages of this project. During **design**, I used it to think through the architecture — specifically whether RAG or a fine-tuned model was a better fit for a small, structured knowledge domain (RAG won because no training data was needed). During **implementation**, Gemini itself was the subject of debugging: reading API error logs to diagnose quota issues (`limit: 0` for `gemini-2.0-flash`) and calling `client.models.list()` to discover which models were actually available for the API key. During **prompt engineering**, I iterated on the system prompt until Gemini consistently returned a raw JSON array instead of prose with embedded JSON.
+
+### One helpful and one flawed AI suggestion
+
+**Helpful:** When given a detailed pet profile (species, age, weight) plus the retrieved senior dog guidelines, Gemini correctly suggested senior-appropriate tasks — smaller meals labeled "senior formula," joint supplements, and shorter walks — without being explicitly told what "senior" meant. This showed the RAG context was being used meaningfully.
+
+**Flawed:** On several early runs, Gemini returned `"recurrence": "monthly"` for grooming tasks, which is not a valid value in the system (`"daily"`, `"weekly"`, or `null` are the only options). The model invented a plausible-sounding value that didn't match the schema. This is exactly why the guardrail exists — `_parse_and_validate()` catches this and sets it to `null` automatically. It was a clear reminder that AI models optimize for plausibility, not correctness.
+
+### System limitations and future improvements
+
+**Current limitations:**
+- No data persistence — all pets and tasks are lost on page refresh. A SQLite database would fix this.
+- The knowledge base is hand-written JSON with ~6 sections per species. It does not cover breed-specific conditions (e.g., hip dysplasia in large dogs) or individual medical history.
+- The AI can only suggest tasks for today. It cannot reason about a week-long care plan.
+
+**Future improvements:**
+- Add a conversational AI chat so owners can ask questions like *"Is it normal for my senior dog to drink more water?"*
+- Replace the rule-based RAG filter with vector embeddings for semantic retrieval across a larger knowledge base.
+- Add email or push notifications for upcoming tasks.
+
+### What this project taught me about AI and problem-solving
+
 Building PawPal+ taught me that AI integration is less about the model and more about the layers around it. The model itself is a black box — what matters is what you feed it (RAG), how you validate what comes out (guardrail), and how you keep the human informed and in control (review step).
 
-The most surprising lesson was how fragile a system can be without guardrails. In early testing, Gemini occasionally returned a JSON object instead of an array, or included an extra explanation paragraph before the JSON. Without `_parse_and_validate()`, these edge cases would have crashed the app silently. Building defensive layers around AI output is not optional — it is the core engineering challenge.
-
-RAG also shifted my thinking about what "intelligence" means in an AI system. The suggestions Gemini made for a 10-year-old senior dog were genuinely different from those for a 2-year-old adult dog, not because the model "knew" about dog care, but because it was given the right context. The intelligence was in the retrieval and prompt design, not just the model.
+RAG shifted my thinking about what "intelligence" means in an AI system. The suggestions Gemini made for a 10-year-old senior dog were genuinely different from those for a 2-year-old adult dog — not because the model "knew" about dog care, but because it was given the right context. The intelligence was in the retrieval and prompt design, not just the model.
 
 For a future employer: this project demonstrates the ability to integrate a production AI API, design a retrieval layer, write defensive validation code, and build a reliable test suite — all in a working, deployable application.
