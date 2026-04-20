@@ -26,7 +26,7 @@ The system has four main layers:
 4. **Guardrail / Validator** (`_parse_and_validate()`) — Parses and sanitizes the AI's JSON output before it becomes a `Task` object. Rejects malformed responses and clamps out-of-range values.
 5. **Scheduler** (`pawpal_system.py`) — Handles conflict detection, conflict resolution, recurring tasks, and daily plan generation entirely through rule-based logic.
 
-<img src='assets/System_Diagram.png' title='System Diagram' width=''  height='800'/>
+<img src='assets/System_Diagram.png' title='System Diagram'/>
 
 
 ```
