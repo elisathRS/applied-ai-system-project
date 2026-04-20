@@ -47,7 +47,7 @@ Testing runs independently against all layers using mocked API calls.
 
 ## Video Walkthrough
 
-[Video Walkthrough](PawPal_wk.mp4)
+<img src='PawPal_wk.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 ---
 
