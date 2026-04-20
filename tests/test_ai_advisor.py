@@ -250,7 +250,8 @@ class TestSuggestTasks:
         monkeypatch.delenv("GEMINI_API_KEY", raising=False)
         pet = make_pet()
         owner = make_owner(pet)
-        result = suggest_tasks(pet, owner, Scheduler())
+        with patch("ai_advisor.load_dotenv"):  # prevent .env from reloading the key
+            result = suggest_tasks(pet, owner, Scheduler())
         assert isinstance(result, str)
         assert "api key" in result.lower()
 
