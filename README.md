@@ -170,6 +170,8 @@ AI suggestions are recommendations, not commands. The user reviews each suggesti
 | `tests/test_pawpal.py` | 16 | Task completion, recurrence chaining, conflict detection, sorting, filtering |
 | **Total** | **40** | **All 40 pass** |
 
+<img src='assets/tests.png' title='tests' width='' alt='tests' />
+
 ### What worked well
 - The guardrail tests caught multiple real edge cases during development: Claude/Gemini sometimes wraps JSON in markdown code fences (` ```json `), returns a single object instead of an array, or uses `"monthly"` as a recurrence value. All of these are now handled.
 - Mocking the Gemini API in tests means the test suite runs in under 2 seconds and never requires an internet connection or API credits.
