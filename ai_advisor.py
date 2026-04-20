@@ -180,41 +180,47 @@ def suggest_tasks(pet: Pet, owner: Owner, scheduler: Scheduler) -> "list[Task] |
         pet.name, pet.species, pet.age, pet.weight, len(pending_tasks),
     )
 
-    # Step 3 — Call Gemini (with retry on rate limit)
+    # Step 3 — Call Gemini (with retry on rate limit + model fallback)
     import time
+    _MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
     client = genai.Client(api_key=api_key)
     raw = None
     last_exc = None
 
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=full_prompt,
-            )
-            raw = response.text.strip()
-            logger.info("Gemini responded (%d chars) on attempt %d", len(raw), attempt + 1)
-            logger.debug("Raw Gemini response: %s", raw)
-            break  # success
+    for model in _MODELS:
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=full_prompt,
+                )
+                raw = response.text.strip()
+                logger.info("Gemini responded (%d chars) — model=%s attempt=%d", len(raw), model, attempt + 1)
+                logger.debug("Raw Gemini response: %s", raw)
+                break  # success
 
-        except Exception as exc:
-            last_exc = exc
-            error_msg = str(exc).lower()
+            except Exception as exc:
+                last_exc = exc
+                error_msg = str(exc).lower()
 
-            if "api_key" in error_msg or "api key" in error_msg or "permission" in error_msg or "401" in error_msg:
-                logger.error("Authentication failed: %s", exc)
-                return "Invalid API key. Check your GEMINI_API_KEY in .env."
-            if "connect" in error_msg or "network" in error_msg:
-                logger.error("Connection error: %s", exc)
-                return "Could not connect to Gemini. Check your internet connection."
+                if "api_key" in error_msg or "api key" in error_msg or "permission" in error_msg or "401" in error_msg:
+                    logger.error("Authentication failed: %s", exc)
+                    return "Invalid API key. Check your GEMINI_API_KEY in .env."
+                if "connect" in error_msg or "network" in error_msg:
+                    logger.error("Connection error: %s", exc)
+                    return "Could not connect to Gemini. Check your internet connection."
 
-            # Rate limit or transient error — wait and retry
-            wait = 2 ** attempt  # 1s, 2s, 4s
-            logger.warning("Attempt %d failed (%s). Retrying in %ds...", attempt + 1, exc, wait)
-            time.sleep(wait)
+                # Rate limit or transient error — wait and retry
+                wait = 2 ** attempt  # 1s, 2s, 4s
+                logger.warning("Attempt %d/%s failed (%s). Retrying in %ds...", attempt + 1, model, exc, wait)
+                time.sleep(wait)
+
+        if raw is not None:
+            break
+        logger.warning("All attempts with %s failed, trying fallback model...", model)
 
     if raw is None:
-        logger.error("All Gemini attempts failed: %s", last_exc)
+        logger.error("All Gemini models failed: %s", last_exc)
         return "Could not reach Gemini after 3 attempts. Please try again in a moment."
 
     # Step 4 — Validate and convert
