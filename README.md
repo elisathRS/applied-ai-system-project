@@ -45,6 +45,12 @@ Testing runs independently against all layers using mocked API calls.
 
 ---
 
+## Video Walkthrough
+
+<img src='PawPal_wk.mp4' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+
+---
+
 ## Setup Instructions
 
 ### 1. Clone the repository
